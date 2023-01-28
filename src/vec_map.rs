@@ -1,6 +1,6 @@
 use std::{borrow::Borrow, fmt::Debug, iter::FusedIterator};
 
-#[derive(Clone, Default, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct VecMap<K, V>(Vec<(K, V)>);
 
 impl<K, V> VecMap<K, V> {
@@ -88,10 +88,7 @@ impl<K, V> VecMap<K, V> {
     }
 }
 
-impl<K, V> VecMap<K, V>
-where
-    K: Eq,
-{
+impl<K: Eq, V> VecMap<K, V> {
     pub fn entry(&mut self, key: K) -> Entry<'_, K, V> {
         match self.0.iter().position(|(k, _)| *k == key) {
             Some(index) => Entry::Occupied(OccupiedEntry {
@@ -199,11 +196,13 @@ impl<K: Debug, V: Debug> Debug for VecMap<K, V> {
     }
 }
 
-impl<'a, K, V> Extend<(&'a K, &'a V)> for VecMap<K, V>
-where
-    K: Eq + Copy,
-    V: Copy,
-{
+impl<K, V> Default for VecMap<K, V> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<'a, K: Eq + Copy, V: Copy> Extend<(&'a K, &'a V)> for VecMap<K, V> {
     fn extend<T: IntoIterator<Item = (&'a K, &'a V)>>(&mut self, iter: T) {
         let iter = iter.into_iter();
         self.reserve(iter.size_hint().0);
@@ -213,10 +212,7 @@ where
     }
 }
 
-impl<K, V> Extend<(K, V)> for VecMap<K, V>
-where
-    K: Eq,
-{
+impl<K: Eq, V> Extend<(K, V)> for VecMap<K, V> {
     fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
         let iter = iter.into_iter();
         self.reserve(iter.size_hint().0);
@@ -226,29 +222,19 @@ where
     }
 }
 
-impl<K, V, const N: usize> From<[(K, V); N]> for VecMap<K, V>
-where
-    K: Eq,
-{
+impl<K: Eq, V, const N: usize> From<[(K, V); N]> for VecMap<K, V> {
     fn from(arr: [(K, V); N]) -> Self {
         let mut map = Self::with_capacity(arr.len());
-        for (key, value) in arr {
-            map.insert(key, value);
-        }
+        map.extend(arr);
         map
     }
 }
 
-impl<K, V> FromIterator<(K, V)> for VecMap<K, V>
-where
-    K: Eq,
-{
+impl<K: Eq, V> FromIterator<(K, V)> for VecMap<K, V> {
     fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
         let iter = iter.into_iter();
         let mut map = Self::with_capacity(iter.size_hint().0);
-        for (key, value) in iter {
-            map.insert(key, value);
-        }
+        map.extend(iter);
         map
     }
 }
@@ -313,6 +299,9 @@ impl<'a, K, V> Iterator for Keys<'a, K, V> {
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().map(|(key, _)| key)
     }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
 }
 
 impl<K, V> FusedIterator for Keys<'_, K, V> {}
@@ -337,6 +326,9 @@ impl<K, V> Iterator for IntoKeys<K, V> {
     type Item = K;
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().map(|(key, _)| key)
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
     }
 }
 
@@ -367,6 +359,9 @@ impl<'a, K, V> Iterator for Values<'a, K, V> {
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().map(|(_, value)| value)
     }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
 }
 
 impl<K, V> FusedIterator for Values<'_, K, V> {}
@@ -391,6 +386,9 @@ impl<'a, K, V> Iterator for ValuesMut<'a, K, V> {
     type Item = &'a mut V;
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().map(|(_, value)| value)
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
     }
 }
 
@@ -417,6 +415,9 @@ impl<K, V> Iterator for IntoValues<K, V> {
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().map(|(_, value)| value)
     }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
 }
 
 impl<K, V> FusedIterator for IntoValues<K, V> {}
@@ -431,7 +432,7 @@ impl<K, V> Clone for Iter<'_, K, V> {
 
 impl<K: Debug, V: Debug> Debug for Iter<'_, K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_list().entries(self.clone()).finish()
+        Debug::fmt(&self.0, f)
     }
 }
 
@@ -447,6 +448,9 @@ impl<'a, K, V> Iterator for Iter<'a, K, V> {
         let (key, value) = self.0.next()?;
         Some((key, value))
     }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
 }
 
 impl<K, V> FusedIterator for Iter<'_, K, V> {}
@@ -455,7 +459,7 @@ pub struct IntoIter<K, V>(std::vec::IntoIter<(K, V)>);
 
 impl<K: Debug, V: Debug> Debug for IntoIter<K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_list().entries(self.0.as_slice().iter()).finish()
+        Debug::fmt(&self.0, f)
     }
 }
 
@@ -470,6 +474,9 @@ impl<K, V> Iterator for IntoIter<K, V> {
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next()
     }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
 }
 
 impl<K, V> FusedIterator for IntoIter<K, V> {}
@@ -478,7 +485,7 @@ pub struct IterMut<'a, K, V>(std::slice::IterMut<'a, (K, V)>);
 
 impl<K: Debug, V: Debug> Debug for IterMut<'_, K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_list().entries(self.0.as_slice().iter()).finish()
+        Debug::fmt(&self.0, f)
     }
 }
 
@@ -494,6 +501,9 @@ impl<'a, K, V> Iterator for IterMut<'a, K, V> {
         let (key, value) = self.0.next()?;
         Some((key, value))
     }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
 }
 
 impl<K, V> FusedIterator for IterMut<'_, K, V> {}
@@ -502,7 +512,7 @@ pub struct Drain<'a, K, V>(std::vec::Drain<'a, (K, V)>);
 
 impl<K: Debug, V: Debug> Debug for Drain<'_, K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_list().entries(self.0.as_slice().iter()).finish()
+        Debug::fmt(&self.0, f)
     }
 }
 
@@ -516,6 +526,9 @@ impl<K, V> Iterator for Drain<'_, K, V> {
     type Item = (K, V);
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next()
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
     }
 }
 

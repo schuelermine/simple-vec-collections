@@ -1,8 +1,8 @@
 [package]
-name = "dumb-container"
-version = "0.0.2"
+name = "simple-vec-collections"
+version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "A Vec-backed associative map"
-repository = "https://github.com/schuelermine/dumb-container"
+description = "Collections implemented using Vec"
+repository = "https://github.com/schuelermine/simple-vec-collections"
 readme = "README.md"

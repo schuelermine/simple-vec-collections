@@ -1,4 +1,4 @@
-A `Vec`-backed reimplementation of Rust’s `std::collections::HashMap`, as close as possible
+# vec-collections
 
-This is a mostly API-compatible reimplementation of `std::collections::HashMap`.
-Some inherent methods that provide hash-based functionality have been removed, some trait bounds have been removed, the `Debug` implementation has been altered for some types.
+Collections implemented using `Vec`.
+The API is mostly compatible with the equivalent `std::collections` collections.
