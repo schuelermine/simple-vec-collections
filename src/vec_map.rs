@@ -432,7 +432,7 @@ impl<K, V> Clone for Iter<'_, K, V> {
 
 impl<K: Debug, V: Debug> Debug for Iter<'_, K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.0, f)
+        f.debug_list().entries(self.clone()).finish()
     }
 }
 
@@ -459,7 +459,7 @@ pub struct IntoIter<K, V>(std::vec::IntoIter<(K, V)>);
 
 impl<K: Debug, V: Debug> Debug for IntoIter<K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.0, f)
+        f.debug_list().entries(self.0.as_slice().iter()).finish()
     }
 }
 
@@ -485,7 +485,7 @@ pub struct IterMut<'a, K, V>(std::slice::IterMut<'a, (K, V)>);
 
 impl<K: Debug, V: Debug> Debug for IterMut<'_, K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.0, f)
+        f.debug_list().entries(self.0.as_slice().iter()).finish()
     }
 }
 
@@ -512,7 +512,7 @@ pub struct Drain<'a, K, V>(std::vec::Drain<'a, (K, V)>);
 
 impl<K: Debug, V: Debug> Debug for Drain<'_, K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.0, f)
+        f.debug_list().entries(self.0.as_slice().iter()).finish()
     }
 }
 

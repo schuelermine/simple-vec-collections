@@ -277,7 +277,7 @@ impl<T> Clone for Iter<'_, T> {
 
 impl<T: Debug> Debug for Iter<'_, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.0, f)
+        f.debug_list().entries(self.clone()).finish()
     }
 }
 
@@ -303,7 +303,7 @@ pub struct Drain<'a, T>(std::vec::Drain<'a, T>);
 
 impl<T: Debug> Debug for Drain<'_, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.0, f)
+        f.debug_list().entries(self.0.as_slice().iter()).finish()
     }
 }
 
@@ -365,7 +365,7 @@ impl<T> Clone for SymmetricDifference<'_, T> {
 
 impl<T: Debug + Eq> Debug for SymmetricDifference<'_, T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.0, f)
+        f.debug_list().entries(self.clone()).finish()
     }
 }
 
@@ -444,7 +444,7 @@ pub struct IntoIter<T>(std::vec::IntoIter<T>);
 
 impl<T: Debug> Debug for IntoIter<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.0, f)
+        f.debug_list().entries(self.0.as_slice().iter()).finish()
     }
 }
 
