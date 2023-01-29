@@ -2,7 +2,7 @@
 
 use std::{borrow::Borrow, fmt::Debug, iter::FusedIterator};
 
-/// A simple associative map.
+/// An associative map.
 /// It is a logic error for any key to change such that its equality
 /// under the [`Eq`] trait changes while it is in the map.
 /// To determine if two keys are “the same”, [`Eq`] is used.
@@ -76,7 +76,7 @@ impl<K, V> VecMap<K, V> {
         Drain(self.0.drain(..))
     }
 
-    /// Remove all key-value pairs that do not satisfy a predicate.
+    /// Remove all key-value pairs that do not satisfy a given predicate.
     pub fn retain<F>(&mut self, mut f: F)
     where
         F: FnMut(&K, &mut V) -> bool,
@@ -90,7 +90,7 @@ impl<K, V> VecMap<K, V> {
         self.0.clear()
     }
 
-    /// Reserve additional space. May allocate more.
+    /// Reserve additional space. May allocate more than requested.
     ///
     /// # Panics
     ///
@@ -99,9 +99,9 @@ impl<K, V> VecMap<K, V> {
         self.0.reserve(additional)
     }
 
-    /// Like [`try_reserve`], but returns a [`Result`] instead of panicking.
+    /// Like [`reserve`], but returns a [`Result`] instead of panicking.
     ///
-    /// [`try_reserve`]: std::collections::TryReserveError
+    /// [`reserve`]: VecMap::reserve
     pub fn try_reserve(
         &mut self,
         additional: usize,
