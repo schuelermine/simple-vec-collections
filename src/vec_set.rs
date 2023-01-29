@@ -188,13 +188,7 @@ impl<T: Eq> VecSet<T> {
         T: Borrow<Q>,
         Q: Eq,
     {
-        let mut index = None;
-        for (i, v) in self.iter().enumerate() {
-            if v.borrow() == value {
-                index = Some(i);
-            }
-        }
-        match index {
+        match self.iter().position(|v| v.borrow() == value) {
             Some(i) => {
                 self.0.remove(i);
                 true
@@ -210,13 +204,7 @@ impl<T: Eq> VecSet<T> {
         T: Borrow<Q>,
         Q: Eq,
     {
-        let mut index = None;
-        for (i, v) in self.iter().enumerate() {
-            if v.borrow() == value {
-                index = Some(i)
-            }
-        }
-        match index {
+        match self.iter().position(|v| v.borrow() == value) {
             Some(i) => Some(self.0.remove(i)),
             None => None,
         }

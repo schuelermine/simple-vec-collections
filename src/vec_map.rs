@@ -76,7 +76,7 @@ impl<K, V> VecMap<K, V> {
         Drain(self.0.drain(..))
     }
 
-    /// Remove all key-value pairs that do not satisfy a given predicate.
+    /// Remove all key-value pairs that don’t satisfy a given predicate.
     pub fn retain<F>(&mut self, mut f: F)
     where
         F: FnMut(&K, &mut V) -> bool,
@@ -125,7 +125,7 @@ impl<K, V> VecMap<K, V> {
 impl<K: Eq, V> VecMap<K, V> {
     /// Returns an [`Entry`] for the given key.
     pub fn entry(&mut self, key: K) -> Entry<'_, K, V> {
-        match self.0.iter().position(|(k, _)| *k == key) {
+        match self.keys().position(|k| *k == key) {
             Some(index) => Entry::Occupied(OccupiedEntry {
                 index,
                 key,
@@ -191,7 +191,7 @@ impl<K: Eq, V> VecMap<K, V> {
     {
         let mut result = None;
         for (key, value) in self {
-            if k == (*key).borrow() {
+            if k == key.borrow() {
                 result = Some(value);
                 break;
             }
@@ -218,7 +218,7 @@ impl<K: Eq, V> VecMap<K, V> {
         K: Borrow<Q>,
         Q: Eq,
     {
-        let index = self.0.iter().position(|(key, _)| key.borrow() == k)?;
+        let index = self.keys().position(|key| key.borrow() == k)?;
         let (_, value) = self.0.remove(index);
         Some(value)
     }
@@ -230,7 +230,7 @@ impl<K: Eq, V> VecMap<K, V> {
         K: Borrow<Q>,
         Q: Eq,
     {
-        let index = self.0.iter().position(|(key, _)| key.borrow() == k)?;
+        let index = self.keys().position(|key| key.borrow() == k)?;
         Some(self.0.remove(index))
     }
 }
