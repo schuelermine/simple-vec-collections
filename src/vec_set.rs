@@ -211,7 +211,8 @@ impl<T: Eq> VecSet<T> {
     }
 }
 
-impl<T: PartialEq> VecSet<T> {
+impl<T: Eq> VecSet<T> {
+    /// Check two sets for equality while considering the order of values.
     pub fn eq_ordered(&self, other: &Self) {
         self.iter().eq(other.iter());
     }

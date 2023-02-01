@@ -236,6 +236,7 @@ impl<K: Eq, V> VecMap<K, V> {
 }
 
 impl<K: Eq, V: PartialEq> VecMap<K, V> {
+    /// Check two maps for equality while considering the order of key-value pairs.
     pub fn eq_ordered(&self, other: &Self) -> bool {
         self.iter().eq(other.iter())
     }
