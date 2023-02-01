@@ -6,7 +6,7 @@ use std::{borrow::Borrow, fmt::Debug, iter::FusedIterator};
 /// It is a logic error for any key to change such that its equality
 /// under the [`Eq`] trait changes while it is in the map.
 /// To determine if two keys are “the same”, [`Eq`] is used.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone)]
 pub struct VecMap<K, V>(Vec<(K, V)>);
 
 impl<K, V> VecMap<K, V> {
@@ -235,6 +235,12 @@ impl<K: Eq, V> VecMap<K, V> {
     }
 }
 
+impl<K: Eq, V: PartialEq> VecMap<K, V> {
+    pub fn eq_ordered(&self, other: &Self) -> bool {
+        self.iter().eq(other.iter())
+    }
+}
+
 impl<K: Debug, V: Debug> Debug for VecMap<K, V> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_map().entries(self.iter()).finish()
@@ -326,6 +332,18 @@ impl<K, V> IntoIterator for VecMap<K, V> {
         IntoIter(self.0.into_iter())
     }
 }
+
+impl<K: Eq + Ord, V: PartialEq + Ord> PartialEq for VecMap<K, V> {
+    fn eq(&self, other: &Self) -> bool {
+        self.iter()
+            .all(|(key, value)| other.get(key) == Some(value))
+            && other
+                .iter()
+                .all(|(key, value)| self.get(key) == Some(value))
+    }
+}
+
+impl<K: Eq + Ord, V: Eq + Ord> Eq for VecMap<K, V> {}
 
 /// An iterator over the keys of a map.
 /// Yields the keys as references.

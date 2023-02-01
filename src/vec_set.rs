@@ -11,7 +11,7 @@ use std::{
 /// It is a logic error for any value to change such that its equality
 /// under the [`Eq`] trait changes while it is in the set.
 /// To determine if two values are “the same”, [`Eq`] is used.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone)]
 pub struct VecSet<T>(Vec<T>);
 
 impl<T> VecSet<T> {
@@ -211,6 +211,12 @@ impl<T: Eq> VecSet<T> {
     }
 }
 
+impl<T: PartialEq> VecSet<T> {
+    pub fn eq_ordered(&self, other: &Self) {
+        self.iter().eq(other.iter());
+    }
+}
+
 impl<T: Eq + Clone> BitAnd<&VecSet<T>> for &VecSet<T> {
     type Output = VecSet<T>;
 
@@ -252,6 +258,8 @@ impl<T> Default for VecSet<T> {
 
 impl<'a, T: Eq + Copy> Extend<&'a T> for VecSet<T> {
     fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        self.reserve(iter.size_hint().0);
         for value in iter {
             self.insert(*value);
         }
@@ -260,6 +268,8 @@ impl<'a, T: Eq + Copy> Extend<&'a T> for VecSet<T> {
 
 impl<T: Eq> Extend<T> for VecSet<T> {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        self.reserve(iter.size_hint().0);
         for value in iter {
             self.insert(value);
         }
@@ -309,6 +319,15 @@ impl<T: Eq + Clone> Sub<&VecSet<T>> for &VecSet<T> {
         self.difference(rhs).cloned().collect()
     }
 }
+
+impl<T: PartialEq + Ord> PartialEq for VecSet<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.iter().all(|value| other.contains(value))
+            && other.iter().all(|value| self.contains(value))
+    }
+}
+
+impl<T: Eq + Ord> Eq for VecSet<T> {}
 
 /// An iterator over the values of a set.
 /// Yields the values as references.
